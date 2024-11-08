@@ -1,117 +1,64 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useEffect } from 'react';
+import { SafeAreaView, StyleSheet, Alert } from 'react-native';
+import { WebView } from 'react-native-webview';
+import messaging from '@react-native-firebase/messaging';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+const App = () => {
+  // FCM 토큰을 가져오는 함수
+  const getFcmToken = async () => {
+    try {
+      // FCM 토큰 가져오기
+      const fcmToken = await messaging().getToken();
+      console.log('[FCM Token]', fcmToken);
+    } catch (error) {
+      console.error('FCM 토큰을 가져오는 데 실패했습니다:', error);
+    }
   };
 
+  // 포그라운드 상태에서 수신된 메시지를 처리하는 함수
+  const handleForegroundMessage = async (remoteMessage: any) => {
+    Alert.alert('새로운 알림', JSON.stringify(remoteMessage.notification));
+  };
+
+  useEffect(() => {
+    // 알림 권한 요청 (iOS 전용)
+    messaging().requestPermission().then(permission => {
+      if (permission) {
+        console.log('알림 권한이 허용되었습니다.');
+        getFcmToken(); // FCM 토큰 가져오기
+      } else {
+        console.log('알림 권한이 거부되었습니다.');
+      }
+    });
+
+    // 포그라운드에서 메시지를 수신하는 리스너 설정
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      handleForegroundMessage(remoteMessage);
+    });
+
+    // 백그라운드 상태에서 메시지를 처리하는 핸들러 설정
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('[백그라운드 메시지]', remoteMessage);
+    });
+
+    // 컴포넌트가 언마운트될 때 리스너 정리
+    return unsubscribe;
+  }, []);
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView style={styles.container}>
+      <WebView
+        // 웹뷰에서 특정 URL 로드
+        source={{ uri: 'https://senior-buddy.vercel.app/' }}
+        style={{ flex: 1 }}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  container: {
+    flex: 1,
   },
 });
 

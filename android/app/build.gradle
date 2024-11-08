@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.app"
+    namespace "com.seniorbuddy.abby"
     defaultConfig {
-        applicationId "com.app"
+        applicationId "com.seniorbuddy.abby"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -108,6 +108,9 @@ android {
 }
 
 dependencies {
+    implementation platform('com.google.firebase:firebase-bom:31.1.0')
+    implementation 'com.google.firebase:firebase-messaging'
+
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
@@ -117,3 +120,6 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+apply plugin: "com.android.application"
+apply plugin: "com.google.gms.google-services"
