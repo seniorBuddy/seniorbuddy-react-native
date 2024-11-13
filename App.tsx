@@ -1,15 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 import messaging from '@react-native-firebase/messaging';
 
 const App = () => {
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
+
   // FCM 토큰을 가져오는 함수
   const getFcmToken = async () => {
     try {
-      // FCM 토큰 가져오기
-      const fcmToken = await messaging().getToken();
-      console.log('[FCM Token]', fcmToken);
+      const token = await messaging().getToken();
+      console.log('[FCM Token]', token);
+      setFcmToken(token); // 상태에 토큰 저장
     } catch (error) {
       console.error('FCM 토큰을 가져오는 데 실패했습니다:', error);
     }
@@ -49,7 +51,7 @@ const App = () => {
     <SafeAreaView style={styles.container}>
       <WebView
         // 웹뷰에서 특정 URL 로드
-        source={{ uri: 'https://senior-buddy.vercel.app/' }}
+        source={{ uri: 'http://192.168.0.82:8000/token=${fcmToken}' }}
         style={{ flex: 1 }}
       />
     </SafeAreaView>
