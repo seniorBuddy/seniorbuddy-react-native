@@ -9,9 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
-import androidx.core.app.NotificationCompat
-import com.google.firebase.messaging.FirebaseMessagingService
-import com.google.firebase.messaging.RemoteMessage
+import android.util.Log
 
 class OverlayService : Service() {
     private lateinit var windowManager: WindowManager
@@ -23,6 +21,8 @@ class OverlayService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d("OverlayService", "Service started")
+
         val messageTitle = intent?.getStringExtra("title")
         val messageBody = intent?.getStringExtra("body")
 
@@ -38,8 +38,10 @@ class OverlayService : Service() {
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else WindowManager.LayoutParams.TYPE_PHONE,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) 
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY 
+            else 
+                WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         )
@@ -57,8 +59,9 @@ class OverlayService : Service() {
         bodyView.text = body
 
         overlayView.setOnClickListener {
+            Log.d("OverlayService", "Overlay clicked, removing view")
             windowManager.removeView(overlayView)
-            stopSelf()
+            // stopSelf()
         }
     }
 
